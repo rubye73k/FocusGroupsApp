@@ -26,6 +26,7 @@ jobs:
         run: npm install
 
       - name: Build Android App
-        run: |
-          cd android
-          ./gradlew assembleRelease
+        run: npm run android -- --no-dev --minify
+
+      - name: Build iOS App
+        run: npm run ios -- --no-dev --minify
