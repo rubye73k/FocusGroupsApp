@@ -22,19 +22,8 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Install dependencies
         run: npm install
 
-      - name: Build Android App
-        run: |
-          cd FocusGroupsApp/android 
-          ./gradlew assembleRelease
+      - name: Lint
+        run: npm run lint
