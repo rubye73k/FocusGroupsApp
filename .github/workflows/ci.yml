@@ -22,11 +22,29 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install dependencies
         run: npm install
 
+      - name: Start Android Emulator
+        run: |
+          echo "y" | sdkmanager "system-images;android-30;google_apis;x86_64"
+          echo "no" | avdmanager create avd -n test -k "system-images;android-30;google_apis;x86_64" --device "pixel_6"
+          emulator -avd test -no-window -no-snapshot -no-audio -no-boot-anim &
+
+      - name: Wait for emulator
+        run: |
+          adb wait-for-device
+          adb shell input keyevent 82
+          sleep 30
+
       - name: Build Android App
         run: npm run android -- --no-dev --minify
-
-      - name: Build iOS App
-        run: npm run ios -- --no-dev --minify
