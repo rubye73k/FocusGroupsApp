@@ -34,17 +34,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Start Android Emulator
-        run: |
-          echo "y" | sdkmanager "system-images;android-30;google_apis;x86_64"
-          echo "no" | avdmanager create avd -n test -k "system-images;android-30;google_apis;x86_64" --device "pixel_6"
-          emulator -avd test -no-window -no-snapshot -no-audio -no-boot-anim &
-
-      - name: Wait for emulator
-        run: |
-          adb wait-for-device || exit 1
-          adb shell input keyevent 82
-        timeout-minutes: 5
-
       - name: Build Android App
-        run: npm run android -- --no-dev --minify
+        run: |
+          cd FocusGroupsApp/android 
+          ./gradlew assembleRelease
