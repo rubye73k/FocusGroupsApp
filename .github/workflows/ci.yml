@@ -1,4 +1,4 @@
-name: React Native CI
+name: Focus Groups CI
 
 on:
   push:
