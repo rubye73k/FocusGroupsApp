@@ -119,39 +119,51 @@ DB_READER_URL="postgresql://.../appdb"     # reader/replica endpoint
                └──────────────┬────────────────┘
                               │ HTTPS
                         ┌─────▼─────┐
-                        │  API GW   │  (or ALB)
+                        │ API GW/ALB│
                         └─────┬─────┘
                               │ invokes
-                        ┌─────▼─────┐
-                        │  Lambda   │  Node.js + Prisma
-                        └─────┬─────┘
-                  ┌───────────┼───────────────────────────┐
-                  │           │                           │
-                  │           │                           │
-          ┌───────▼───────┐   │                   ┌───────▼─────────┐
-          │ ElastiCache   │   │                   │   RDS Proxy     │
-          │   (Redis)     │   │                   │ (pooled conns)  │
-          └───────┬───────┘   │                   └───────┬─────────┘
-                  │           │                           │
-      cache hits  │           │        writer endpoint    │    read-only endpoint
-   (bypass DB)    │           │                      ┌─────▼─────┐
-                  │           │                      │           │
-                  │           │                      │           │
-                  │           │                      │           │
-                  │           │               ┌──────▼──────┐    ▼
-                  │           └──────────────►│  RDS Writer │─────┐
-                  │                           └──────┬──────┘     │
-                  │                                  ┌▼┐           │
-                  │                                  ││            │
-                  │                               Replication      │
-                  │                                  ││            │
-                  │                             ┌────▼─────┐  ┌───▼─────┐
-                  │                             │ Read Rep │  │ Read Rep│  (Multi‑AZ readers)
-                  │                             └──────────┘  └─────────┘
-                  │
-                  └── cache miss: Lambda decides RO vs RW via prismaRO/prismaRW
+                        ┌─────▼──────────────────────────┐
+                        │ Lambda / ECS (VPC subnets)     │
+                        │  Node.js + Prisma              │
+                        │  - prismaRW → writer endpoint  │
+                        │  - prismaRO → reader endpoint  │
+                        │    (fallback to writer for     │
+                        │     strong reads or no readers)│
+                        └───┬───────────────┬────────────┘
+                            │               │
+                     cache hit              │ cache miss / DB path
+                            │               │
+                     ┌──────▼─────┐         │
+                     │ ElastiCache│         │
+                     │   (Redis)  │         │
+                     └────────────┘         │
+                                            │
+                                  ┌─────────▼─────────┐
+                                  │     RDS Proxy     │
+                                  │  - writer EP      │
+                                  │  - read-only EP   │
+                                  └───────┬─────┬─────┘
+                                          │     │
+                               prismaRW ──┘     └─── prismaRO
+                                          │     │
+                                    ┌─────▼─────┐
+                                    │  Writer   │  RDS for PostgreSQL
+                                    │ (Primary) │  Multi-AZ DB Cluster
+                                    └─────┬─────┘
+                                          │ Physical replication
+                                ┌─────────┴─────────┐
+                                │                   │
+                          ┌─────▼─────┐       ┌─────▼─────┐
+                          │ Reader A  │       │ Reader B  │   (readable standbys)
+                          └───────────┘       └───────────┘
 ```
 
+Notes:
+- App routes:
+  - Writes and read-after-write/strong-consistency reads → RDS Proxy writer endpoint.
+  - Eventual-consistency reads → RDS Proxy read-only endpoint (load-balanced to readers).
+  - If no healthy readers or freshness required → fallback to writer endpoint.
+- This uses the Multi-AZ DB Cluster flavor (readable standbys). Classic Multi-AZ standby is not readable.
 ---
 
 ## 4) Trade‑offs & Considerations
