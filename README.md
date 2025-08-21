@@ -1,50 +1,54 @@
-# Welcome to your Expo app 👋
+# Impulse Focus Groups App – Take Home Submission
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Overview
 
-## Get started
+This React Native app implements a “Focus Groups” feature: browse groups, join/leave, and chat (local state). It is designed with clean structure and modern UI, using [expo-router](https://docs.expo.dev/router/introduction/) for navigation.
 
-1. Install dependencies
+## Features
 
-   ```bash
-   npm install
-   ```
+- List of groups (with join/leave)
+- Group details & chat (local-only)
+- State management with React hooks
+- Modern, responsive UX
 
-2. Start the app
+## Quick Start
 
-   ```bash
-   npx expo start
-   ```
+```sh
+yarn install     # or: npm install
+yarn start       # or: npm start
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+Open in Expo Go app, emulator, or web.
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Code Structure
 
-## Learn more
+  groups/index.tsx        # Group list screen
+  groups/[id].tsx         # Group detail & chat
+components/ui/GroupCard.tsx
+constants/group.ts
+docs/
+  rds-scaling-architecture.md  # Part 2: Scaling architecture
+  short-answers.md             # Part 3: Short answers
 
-To learn more about developing your project with Expo, look at the following resources:
+## Design Choices
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Expo-router for auto navigation
+Modular components (GroupCard)
+Local state with useState (easily extendable)
+Friendly color palette, subtle UI polish
 
-## Join the community
+## Customization & Extensibility
 
-Join our community of developers creating universal apps.
+Swap mock group data for API calls
+Connect chat/messages to backend
+Add avatars, persistent storage, or user auth
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Documentation
+
+- Part 2: See
+docs/rds-scaling-architecture.md
+ Detailed AWS/Postgres/Prisma scaling proposal, with architecture, tradeoffs, and diagram.
+
+- Part 3: See
+docs/short-answers.md
+ Concise responses on scaling, CI/CD, and team workflow best practices.
